@@ -50,6 +50,7 @@ RUN \
     libboost-thread1.74.0 \
     libevent-2.1-7 \
     libevent-pthreads-2.1-7 \
+    libfmt8 \
     libboost-program-options1.74.0 \
     libboost-chrono1.74.0 \
     libczmq4 \
