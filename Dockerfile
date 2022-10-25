@@ -1,3 +1,4 @@
+# First stage build
 FROM mjmckinnon/ubuntubuild:latest as builder
 
 ARG VERSION="v0.21.2.1"
@@ -10,6 +11,7 @@ ENV DEBIAN_FRONTEND="noninteractive"
 WORKDIR /root
 RUN git clone ${GITREPO} --branch ${VERSION}
 WORKDIR /root/${GITNAME}
+# Configure and compile
 RUN \
     echo "** compile **" \
     && ./autogen.sh \
@@ -24,13 +26,13 @@ RUN \
     && find /dist-files -name "lib*.a" -delete \
     && cd .. && rm -rf ${GITREPO}
 
-# Final stage
+# Final stage build
 FROM ubuntu:22.04
 LABEL maintainer="Michael J. McKinnon <mjmckinnon@gmail.com>"
 
-# Put our entrypoint script in
-COPY ./docker-entrypoint.sh /
-ENTRYPOINT ["/docker-entrypoint.sh"]
+# Copy and set entrypoint script
+COPY ./docker-entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 # Copy the compiled files
 COPY --from=builder /dist-files/ /
@@ -54,12 +56,14 @@ RUN \
     libboost-program-options1.74.0 \
     libboost-chrono1.74.0 \
     libczmq4 \
+    && echo "** cleanup artifacts **" \
     && apt-get clean autoclean \
     && apt-get autoremove --yes \
     && rm -rf /var/lib/{apt,dpkg,cache,log}/ \
     && rm -rf /tmp/* /var/tmp/*
 
 ENV DATADIR="/data"
-EXPOSE 22556
+EXPOSE 9332
+EXPOSE 9333
 VOLUME /data
 CMD ["litecoind", "-printtoconsole"]
