@@ -1,7 +1,7 @@
 # First stage build
-FROM mjmckinnon/ubuntubuild:latest as builder
+FROM mjmckinnon/ubuntubuild:22.04 AS builder
 
-ARG VERSION="v0.21.2.1"
+ARG VERSION="v0.21.4"
 ARG GITREPO="https://github.com/litecoin-project/litecoin.git"
 ARG GITNAME="litecoin"
 ARG COMPILEFLAGS="--disable-tests --disable-bench --enable-cxx --disable-shared --with-pic --disable-wallet --without-gui --without-miniupnpc"
@@ -12,8 +12,8 @@ WORKDIR /root
 RUN git clone ${GITREPO} --branch ${VERSION}
 WORKDIR /root/${GITNAME}
 # Configure and compile
-RUN \
-    echo "** compile **" \
+RUN set -e \
+    && echo "** compile **" \
     && ./autogen.sh \
     && ./configure CXXFLAG="-O2" LDFLAGS=-static-libstdc++ ${COMPILEFLAGS} \
     && make \
@@ -43,8 +43,8 @@ RUN \
     && useradd -u 1000 -g litecoin litecoin
 
 ENV DEBIAN_FRONTEND="noninteractive"
-RUN \
-    echo "** update and install dependencies ** " \
+RUN set -e \
+    && echo "** update and install dependencies ** " \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
     gosu \
